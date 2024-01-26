@@ -27,3 +27,7 @@ npm run dev
 ```sh
 npm run build
 ```
+
+Demo project:
+
+![screencapture-127-0-0-1-5173-2024-01-26-10_11_52](https://github.com/Sunilshah-7/learning-vuejs/assets/43769682/1410a29b-420a-4518-a4e4-3ae1bceaa9e1)
