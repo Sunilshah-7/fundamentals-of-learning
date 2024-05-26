@@ -8,12 +8,14 @@
     <label> Password: </label>
     <input type="password" name="password" placeholder="Enter password" />
     <input type="submit" name="Login" />
+    <p>Haven't signed up yet?</p>
+    <a href="{% url 'register' %}"> Sign in</a>
   </form>
 </div>
 {% else %}
 <div>
   <form method="POST" action="">
-    {% csrf_token %}
+    {% csrf_token %} {{form.as_p}}
     <input type="submit" name="Register" />
   </form>
 

@@ -2,11 +2,12 @@ from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.http import HttpResponse
 from django.db.models import Q
-from .models import Room, Topic
+from .models import Room, Topic, Messages
 from django.contrib.auth import authenticate, login , logout
 from django.contrib.auth.models import User
 from .forms import RoomForm
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm
 
 # Create your views here.
 def loginPage(request):
@@ -15,7 +16,7 @@ def loginPage(request):
         return redirect("home")
 
     if request.method == 'POST':
-        username = request.POST.get('username')
+        username = request.POST.get('username').lower()
         password = request.POST.get('password')
 
         try:
@@ -38,8 +39,19 @@ def logoutUser(request):
     return redirect('home')
 
 def registerUser(request):
-    page = "register"
-    return render(request, "base/login_register.html")
+
+    form = UserCreationForm()
+    if request.method == 'POST':
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.username = user.username.lower()
+            user.save()
+            login(request, user)
+            return redirect('home')
+        else:
+            messages.error(request, 'An error occured during registration')
+    return render (request, "base/login_register.html", {'form':form})
 
 def home(request):
     q = request.GET.get('q') if request.GET.get('q') != None else ''
@@ -56,10 +68,16 @@ def home(request):
 
 def room(request,pk):
     room = Room.objects.get(id=pk)
-    # for i in rooms:
-    #     if i['id'] == int(pk):
-    #         room = i 
-    context ={'room':room}
+    room_messages = room.messages_set.all().order_by('-created')
+    participants = room.participants.all()
+    if request.method == 'POST':
+        message = Messages.objects.create(
+            user = request.user,
+            room = room,
+            body = request.POST.get('body')
+        )
+        return redirect('room', pk=room.id)
+    context ={'room':room, 'room_messages': room_messages, 'participants': participants}
     return render(request, 'base/room.html', context)
 
 @login_required(login_url="login")
